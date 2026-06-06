@@ -16,6 +16,15 @@ export async function createBookmark(formData: FormData) {
   const url = formData.get('url') as string
   const is_public = formData.get('is_public') === 'on'
 
+  // Ensure user is in public.users table to prevent foreign key violation
+  const { data: profile } = await supabase.from('users').select('id').eq('id', user.id).single()
+  if (!profile) {
+    await supabase.from('users').insert({ 
+      id: user.id, 
+      handle: user.user_metadata?.handle || `user_${user.id.substring(0, 8)}`
+    })
+  }
+
   const { error } = await supabase.from('bookmarks').insert({
     user_id: user.id,
     title,
@@ -24,11 +33,12 @@ export async function createBookmark(formData: FormData) {
   })
 
   if (error) {
+    console.error('Failed to create bookmark error:', error)
     throw new Error('Failed to create bookmark')
   }
 
   revalidatePath('/dashboard')
-  redirect('/dashboard')
+  return { success: true }
 }
 
 export async function updateBookmark(id: string, formData: FormData) {
@@ -59,7 +69,7 @@ export async function updateBookmark(id: string, formData: FormData) {
   }
 
   revalidatePath('/dashboard')
-  redirect('/dashboard')
+  return { success: true }
 }
 
 export async function deleteBookmark(id: string) {

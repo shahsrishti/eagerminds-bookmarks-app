@@ -1,7 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
 import { deleteBookmark } from './actions'
 import Link from 'next/link'
-import { Plus, Globe, Lock, ExternalLink, Edit2, Trash2 } from 'lucide-react'
+import { Plus, Globe, Lock, ExternalLink, Edit2 } from 'lucide-react'
+import { DeleteBookmarkButton } from './DeleteBookmarkButton'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -73,17 +74,7 @@ export default async function DashboardPage() {
                   >
                     <Edit2 size={16} />
                   </Link>
-                  <form action={async () => {
-                    'use server'
-                    await deleteBookmark(bookmark.id)
-                  }}>
-                    <button 
-                      type="submit"
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </form>
+                  <DeleteBookmarkButton id={bookmark.id} />
                 </div>
               </div>
               <h3 className="font-semibold text-slate-900 line-clamp-1 mb-1">

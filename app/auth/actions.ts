@@ -10,13 +10,25 @@ export async function login(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
 
   if (error) {
+    console.error('Login error:', error)
     return redirect('/login?message=Could not authenticate user')
+  }
+
+  // Ensure user is in the public.users table (handles the case where signup insert failed due to RLS/email confirmation)
+  if (authData?.user) {
+    const { data: profile } = await supabase.from('users').select('id').eq('id', authData.user.id).single()
+    if (!profile) {
+      await supabase.from('users').insert({ 
+        id: authData.user.id, 
+        handle: authData.user.user_metadata?.handle || `user_${authData.user.id.substring(0, 8)}`
+      })
+    }
   }
 
   revalidatePath('/dashboard')
@@ -47,14 +59,20 @@ export async function signup(formData: FormData) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        handle: handle,
+      }
+    }
   })
 
   if (error) {
+    console.error('Signup error:', error)
     return redirect('/signup?message=Could not sign up user')
   }
 
   if (data.user) {
-    // Insert handle into users table
+    // Attempt to insert handle into users table immediately (may fail if email confirmation is required)
     const { error: insertError } = await supabase
       .from('users')
       .insert({ id: data.user.id, handle: handle })

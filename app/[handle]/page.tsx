@@ -6,15 +6,16 @@ import { Globe, ExternalLink, ArrowLeft } from 'lucide-react'
 export default async function PublicProfilePage({
   params
 }: {
-  params: { handle: string }
+  params: Promise<{ handle: string }>
 }) {
+  const resolvedParams = await params;
   const supabase = await createClient()
   
   // Find user by handle
   const { data: userProfile } = await supabase
     .from('users')
     .select('id, handle')
-    .eq('handle', params.handle)
+    .eq('handle', resolvedParams.handle)
     .single()
 
   if (!userProfile) {

@@ -1,8 +1,26 @@
+'use client'
+
 import { createBookmark } from '@/app/dashboard/actions'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 export default function NewBookmarkPage() {
+  const router = useRouter()
+
+  const handleSubmit = async (formData: FormData) => {
+    try {
+      const res = await createBookmark(formData)
+      if (res?.success) {
+        toast.success('Bookmark created successfully!')
+        router.push('/dashboard')
+      }
+    } catch (error) {
+      toast.error('Failed to create bookmark')
+    }
+  }
+
   return (
     <div className="p-8 max-w-2xl mx-auto">
       <div className="mb-8">
@@ -17,7 +35,7 @@ export default function NewBookmarkPage() {
       </div>
 
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <form action={createBookmark} className="space-y-6">
+        <form action={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1">
               Title
