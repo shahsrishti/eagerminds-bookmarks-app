@@ -1,5 +1,4 @@
 import { createClient } from '@/utils/supabase/server'
-import { deleteBookmark } from './actions'
 import Link from 'next/link'
 import { Plus, Globe, Lock, ExternalLink, Edit2 } from 'lucide-react'
 import { DeleteBookmarkButton } from './DeleteBookmarkButton'
