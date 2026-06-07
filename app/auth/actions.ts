@@ -22,7 +22,7 @@ export async function login(formData: FormData) {
 
   // Ensure user is in the public.users table (handles the case where signup insert failed due to RLS/email confirmation)
   if (authData?.user) {
-    const { data: profile } = await supabase.from('users').select('id').eq('id', authData.user.id).single()
+    const { data: profile } = await supabase.from('users').select('id').eq('id', authData.user.id).maybeSingle()
     if (!profile) {
       await supabase.from('users').insert({ 
         id: authData.user.id, 
@@ -50,10 +50,10 @@ export async function signup(formData: FormData) {
     .from('users')
     .select('id')
     .eq('handle', handle)
-    .single()
+    .maybeSingle()
 
   if (existingUser) {
-    return redirect('/signup?message=Handle is already taken')
+    return redirect('/signup?message=That handle is already taken. Please choose another.')
   }
 
   const { data, error } = await supabase.auth.signUp({
